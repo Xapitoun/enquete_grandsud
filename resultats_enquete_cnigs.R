@@ -76,7 +76,7 @@ travail<-function(enqueteur){
 }
 
 #examples showing how the function is used  
-travail('sd004')
+travail('np003')
 
 #controle qualité
 #cartographique
@@ -90,20 +90,21 @@ nom <- enquete[enquete$duree_reponse >= 15, c("zone_travail", "duree_reponse", "
 # chargement données dans leaflet
 m <- leaflet(enquete) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  
+  addPolygons(zones_enqu, lng, lat) %>%
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~code_gps.Longitude , lat =~code_gps.Latitude, popup = paste(enquete$etablissement, enquete$type, enquete$sous_type_nom))
-  #addPolygons(zones, lng, lat) %>%
+  
 m
 
 sd001 <- enquete[enquete$zone_travail == "sd001",]
 nrow(enquete$type)
-#enquete$sous_type <- factor(enquete$sous_type)
+
 #chargement des zones d’enquête
 routes_osm <- readShapeLines("~/Documents/jftardieu/grand_sud_shp/planet_osm_line.shp")
 r <- readOGR("~/Documents/jftardieu/grand_sud_shp/planet_osm_line.shp")
 zones <- readShapePoly("~/Documents/jftardieu/zones_enquete/zonesenquete.shp")
+zones_enqu <- zones[zones$Code_enque == "Sd001",]
 poly_osm_initial <- readShapePoly("~/Documents/jftardieu/grand_sud_shp/planet_osm_polygon.shp")
 poly_osm_enquete <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_zone84/polygon_osm_zonesenquete84.shp")
 #zone <- readOGR(dsn = "~/Documents/jftardieu/zones_enquete/zonesenquete.shp" )
@@ -113,3 +114,4 @@ poly_osm_enquete <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_z
 
 # Écriture du CSV
 write.csv(enquete, file = "enquete150517_retravaille.csv")
+
