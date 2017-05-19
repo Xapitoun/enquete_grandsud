@@ -102,9 +102,9 @@ nom <- enquete[enquete$duree_reponse >= 15, c("zone_travail", "duree_reponse", "
 #r <- readOGR("~/Documents/jftardieu/grand_sud_shp/planet_osm_line.shp")
 zones <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_zone84/zones_enquete84.shp")
 zones$travail <- tolower(zones$Code_enque) #code enqueteur en minuscules
-#zones_trav <- zones[zones$travail == "sd005",] #filtre par zone d’enquete
+zones_trav <- zones[zones$travail == "sd005",] #filtre par zone d’enquete
 enqueteur <- enquete[enquete$zone_travail == "sd005",] 
-enqueteur <- enquete
+
 CRSojb <- CRS("+proj=longlat +datum=WGS84 +no_defs") #scr de référence
 #enqueteur@proj4string <- CRSojb 
 zones_trav@proj4string <- CRSojb
@@ -112,7 +112,7 @@ coordinates(enqueteur) <- ~ code_gps.Longitude + code_gps.Latitude #définition 
 proj4string(enqueteur) <- proj4string(zones_trav) #mise en place scr identique deux jeux données
 #point dans polygone
 #sd <- over(enqueteur, zones_trav)
-over(enqueteur, zones_trav)
+over <-over(enqueteur, zones_trav)
 # carte point dans polygone
 plot(zones_trav)
 points(enqueteur$code_gps.Latitude ~ enqueteur$code_gps.Longitude, col = "red", cex = 1)

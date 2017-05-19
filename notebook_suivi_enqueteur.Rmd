@@ -17,37 +17,497 @@ library("rgeos")
 library("ggmap")
 #configuration du dossier par défaut
 setwd("~/Documents/jftardieu/enquete_grandsud/")
-
-enquete <- read.csv("~/Documents/jftardieu/enquete_grandsud/enquete170517_1253_retravaille.csv")
+retravaille <- read.csv("~/Documents/jftardieu/enquete_grandsud/enquete190517_1253_retravaille.csv")
 zones <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_zone84/zones_enquete84.shp")
+enqueteur <- retravaille[,c("debut", "fin", "duree_reponse","zone_travail", "donn_admin.section", "adresse.localite", "adresse.numero", "adresse.rue", "type", "sous_type_nom", "etablissement", "batiment.propriete", "remarque", "code_gps.Longitude", "code_gps.Latitude")]
 zones$travail <- tolower(zones$Code_enque) #code enqueteur en minuscules
 CRSojb <- CRS("+proj=longlat +datum=WGS84 +no_defs") #scr de référence
-#enqueteur@proj4string <- CRSojb 
-zones_trav@proj4string <- CRSojb
+#enquete@proj4string <- CRSojb 
+zones@proj4string <- CRSojb
 coordinates(enqueteur) <- ~ code_gps.Longitude + code_gps.Latitude 
-#définition coordonnées « enqueteur »
-proj4string(enqueteur) <- proj4string(zones_trav) #mise en place scr identique deux jeux données
+#définition coordonnées « enquete »
+proj4string(enqueteur) <- proj4string(zones) #mise en place scr identique deux jeux données
 ```
 
 # Sud
 ## Sd001
 ```{r}
-
-enqueteur <- enquete[enquete$zone_travail == "sd001",]
 zones_trav <- zones[zones$travail == "sd001",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd001",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
 
 #point dans polygone
-over(enqueteur, zones_trav)
+#over(enqueteur, zones_trav)
 #nbre points dans polygones
 
 # carte point dans polygone
-plot(zones_trav)
-points(enqueteur$code_gps.Latitude ~ enqueteur$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd001",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd001",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Sd002
+```{r}
+zones_trav <- zones[zones$travail == "sd002",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd002",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd002",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd002",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Sd003
+```{r}
+zones_trav <- zones[zones$travail == "sd003",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd003",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
 ```
 
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd003",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd003",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
 
+## Sd004
+```{r}
+zones_trav <- zones[zones$travail == "sd004",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd004",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
 
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd004",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd004",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+## Sd005
+```{r}
+zones_trav <- zones[zones$travail == "sd005",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd005",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd005",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd005",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments. 
+
+## Sd006
+```{r}
+zones_trav <- zones[zones$travail == "sd006",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd006",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd006",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd006",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Sd007
+```{r}
+zones_trav <- zones[zones$travail == "sd007",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd007",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd007",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd007",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Sd008
+```{r}
+zones_trav <- zones[zones$travail == "sd008",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd008",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd008",])`** éléments dans la zone de travail et `r nrow(o[o$Code_enque == "sd008",])` éléments  qui ne sont pas dans le bon polygone sur un total de `r nrow(resultat)`  éléments.
+
+## Sd009
+```{r}
+zones_trav <- zones[zones$travail == "sd009",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd009",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd009",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd009",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Sd010 **(pas encore de point enregistré)**
+```{r}
+zones_trav <- zones[zones$travail == "sd010",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd010",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+#o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd010",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd010",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Sd011
+```{r}
+zones_trav <- zones[zones$travail == "sd011",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd011",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd011",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd011",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Sd012
+```{r}
+zones_trav <- zones[zones$travail == "sd012",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd012",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd012",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd012",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Sd013
+```{r}
+zones_trav <- zones[zones$travail == "sd013",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "sd013",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd013",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd013",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+# Nippes
+## Np001
+```{r}
+zones_trav <- zones[zones$travail == "np001",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "np001",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "blue", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "np001",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "np001",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Np002
+```{r}
+zones_trav <- zones[zones$travail == "np002",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "np002",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "blue", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "np002",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "np002",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Np003
+```{r}
+zones_trav <- zones[zones$travail == "np003",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "np003",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "blue", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "np003",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "np003",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Np004
+```{r}
+zones_trav <- zones[zones$travail == "np004",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "np004",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "blue", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "np004",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "np004",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+# Grand Anse
+## Gd001 **(pas encore de point enregistré)**
+```{r}
+zones_trav <- zones[zones$travail == "gd001",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "gd001",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+#o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd001",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd001",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Gd002
+```{r}
+zones_trav <- zones[zones$travail == "gd002",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "gd002",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd002",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd002",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Gd003
+```{r}
+zones_trav <- zones[zones$travail == "gd003",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "gd003",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd003",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd003",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Gd004
+```{r}
+zones_trav <- zones[zones$travail == "gd004",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "gd004",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd004",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd004",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Gd005
+```{r}
+zones_trav <- zones[zones$travail == "gd005",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "gd005",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd005",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd005",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Gd006
+```{r}
+zones_trav <- zones[zones$travail == "gd006",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "gd006",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd006",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd006",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+## Gd007 **(pas encore de point enregistré)**
+```{r}
+zones_trav <- zones[zones$travail == "gd007",] #filtre par zone d’enquete
+  
+  resultat <- enqueteur[enqueteur$zone_travail == "gd007",]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav)
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+#o <- over(resultat, zones_trav)
+```
+### Résumé
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd007",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd007",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
