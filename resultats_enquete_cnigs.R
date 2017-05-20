@@ -11,14 +11,15 @@ library("ggmap")
 setwd("~/Documents/jftardieu/enquete_grandsud/")
 
 #chargement du fichier d’enquête
-enquete_initial <- read.csv("190517_0328_enquete_nettoye.csv", header = TRUE, colClasses = c("adresse.localite"="character", "adresse.numero"="character", "adresse.rue"="character", "sous_type"="factor", "remarque"="character"))
+enquete_initial <- read.csv("190517_1352_enquete_nettoye.csv", header = TRUE, colClasses = c("adresse.localite"="character", "adresse.numero"="character", "adresse.rue"="character", "sous_type"="factor", "remarque"="character"))
 enquete <- enquete_initial[-c(1:120),]
+
 attach(enquete)
 #conversion caractère en date
 enquete$debut <- strptime((paste("05",str_sub(enquete$start, -20, -10),str_sub(enquete$start, -4, -1))),format = "%m %e %H:%M:%S %Y", tz = "GMT") 
 enquete$fin <- strptime((paste("05",str_sub(enquete$end, -20, -10),str_sub(enquete$end, -4, -1))),format = "%m %e %H:%M:%S %Y", tz = "GMT") 
 #calcul intervalle remplissage formulaire
-enquete$duree_reponse <- difftime(enquete$fin, enquete$debut, units = c("auto"))
+enquete$duree_reponse <- as.numeric(difftime(enquete$fin, enquete$debut, units = c("mins")))
 
 #données qualitatives
 ##batiment
@@ -70,33 +71,37 @@ enquete$donn_admin.departement[which(enquete$zone_travail == "sd001")]
 #focnction analyse donnees enqueteur
 travail<-function(enqueteur){
   
-
-  enqueteur <- enquete[enquete$zone_travail == enqueteur,]
+# choix zones de travail
+  enqueteur <- enquete[enquete$zone_travail == enqueteur,c("debut", "fin", "duree_reponse","zone_travail", "donn_admin.section", "adresse.localite", "adresse.numero", "adresse.rue", "type", "sous_type_nom", "etablissement", "batiment.propriete", "remarque", "code_gps.Longitude", "code_gps.Latitude")]
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
   attach(enqueteur)
-  enqueteur <- enqueteur[,c("debut", "fin", "donn_admin.section", "adresse.localite", "adresse.numero", "adresse.rue", "type", "sous_type_nom", "etablissement", "batiment.propriete",
-                          "remarque")]
+  #enqueteur <- enqueteur[,c("debut", "fin", "duree_reponse","zone_travail", "donn_admin.section", "adresse.localite", "adresse.numero", "adresse.rue", "type", "sous_type_nom", "etablissement", "batiment.propriete", "remarque", "code_gps.Longitude", "code_gps.Latitude")]
   
+  
+  plot(zones_trav)
+  points(enqueteur$code_gps.Latitude ~ enqueteur$code_gps.Longitude, col = "red", cex = 1)
+  
+  #over(enqueteur, zones_trav)
   View(enqueteur)
+ 
+  
   return(enqueteur)
 
 }
 
 
-
-
-
 #examples showing how the function is used  
-travail('np003')
+travail('sd001')
 
 #controle qualité
 #cartographique
-point_poly <- over(enquete, as(poly_osm, "SpatialPolygons"))
+
 
 
 #controles des données récoltéees
 ##nom établissement et type et sous-type
 nom <- enquete[enquete$duree_reponse >= 15, c("zone_travail", "duree_reponse", "fin","debut", "etablissement", "type", "sous_type_nom" )]
-
+hist(nom$duree_reponse)
 #chargement des zones d’enquête
 #routes_osm <- readShapeLines("~/Documents/jftardieu/grand_sud_shp/planet_osm_line.shp")
 #r <- readOGR("~/Documents/jftardieu/grand_sud_shp/planet_osm_line.shp")
@@ -122,12 +127,12 @@ points(enqueteur$code_gps.Latitude ~ enqueteur$code_gps.Longitude, col = "red", 
 
 # chargement données dans leaflet
 enqueteur <- enquete[enquete$zone_travail == "np003",] 
-m <- leaflet(enqueteur) %>%
+m <- leaflet(sd005) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
   #addPolygons(zones_enqu, lng, lat) %>%
   addMarkers(
     clusterOptions = markerClusterOptions(),
-    lng = ~code_gps.Longitude , lat =~code_gps.Latitude, popup = paste(enqueteur$etablissement, enqueteur$type, enqueteur$sous_type_nom))
+    lng = ~code_gps.Longitude , lat =~code_gps.Latitude, popup = paste(sd005$etablissement, sd005$type, sd005$sous_type_nom))
   
 m
 
@@ -147,5 +152,5 @@ poly_osm_enquete <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_z
 
 
 # Écriture du CSV
-write.csv(enqueteur, file = "enquete170517_1253_retravaille.csv")
+write.csv(enquete, file = "enquete190517_1253_retravaille.csv")
 

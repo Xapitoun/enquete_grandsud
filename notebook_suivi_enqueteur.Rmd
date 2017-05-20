@@ -1,9 +1,21 @@
 ---
-title: "Suivi des enquêteurs par zone de travail"
+title: |-
+  Enquête Grand Sud
+   
+author: "Lamure Tardieu F. X."
+date: "19 mai 2017"
 output:
-  html_document: default
-  html_notebook: default
+  html_document:
+   toc: yes
+
+  #word_document: default
+subtitle: CNIGS
+editor: ""
+
 ---
+
+
+
 Ce document permet de suivre l’avancée de l’enquête.
 
 ```{r}
@@ -11,9 +23,8 @@ library("leaflet")
 library("rgdal")
 library("maptools")
 library("sp")
-library("stringr")
 library("rgeos")
-#library("OpenStreetMap")
+
 library("ggmap")
 #configuration du dossier par défaut
 setwd("~/Documents/jftardieu/enquete_grandsud/")
@@ -52,7 +63,7 @@ Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd001",])`** éléments dans 
 
 ## Sd002
 ```{r}
-zones_trav <- zones[zones$travail == "sd002",] #filtre par zone d’enquete
+zones_trav <- zones[zones$travail == "sd003",] #filtre par zone d’enquete
   
   resultat <- enqueteur[enqueteur$zone_travail == "sd002",]
   #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
@@ -72,7 +83,7 @@ Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd002",])`** éléments dans 
 
 ## Sd003
 ```{r}
-zones_trav <- zones[zones$travail == "sd003",] #filtre par zone d’enquete
+zones_trav <- zones[zones$travail == "sd002",] #filtre par zone d’enquete
   
   resultat <- enqueteur[enqueteur$zone_travail == "sd003",]
   #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
