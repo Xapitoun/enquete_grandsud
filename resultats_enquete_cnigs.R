@@ -10,8 +10,10 @@ library("ggmap")
 #configuration du dossier par défaut
 setwd("~/Documents/jftardieu/enquete_grandsud/")
 
+#fonction transformation enquete avec toutes caracteristiques approppriées
+caracteristique <- function(base){
 #chargement du fichier d’enquête
-enquete_initial <- read.csv("190517_1352_enquete_nettoye.csv", header = TRUE, colClasses = c("adresse.localite"="character", "adresse.numero"="character", "adresse.rue"="character", "sous_type"="factor", "remarque"="character"))
+enquete_initial <- read.csv(base, header = TRUE, colClasses = c("adresse.localite"="character", "adresse.numero"="character", "adresse.rue"="character", "sous_type"="factor", "remarque"="character"))
 enquete <- enquete_initial[-c(1:120),]
 
 attach(enquete)
@@ -60,14 +62,16 @@ enquete$sous_type_nom <- factor(enquete$sous_type,
 #ajout nom propriété
 enquete$batiment.propriete <- factor(enquete$batiment.propriete, labels = c("Publique",	"Privée",	"Communautaire /ONG / non lucratif",	"Coopérative",	"Religieux / Congréganiste"), levels = c(1,2,3,4,5))
 
+return(base)
+}
 
-
+caracteristique("~/Documents/jftardieu/enquete_grandsud/210517_0956_enquete.csv")
 #controle qualité
 #nombre de formulaires sans nom (99)
 enquete$etablissement[enquete$etablissement == 99]
 enquete$type[enquete$type = 14.0]
 
-enquete$donn_admin.departement[which(enquete$zone_travail == "sd001")]
+controle_enque <- enquete$zone_travail[which(enquete$zone_travail == "gd007")]
 #focnction analyse donnees enqueteur
 travail<-function(enqueteur){
   
@@ -152,5 +156,5 @@ poly_osm_enquete <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_z
 
 
 # Écriture du CSV
-write.csv(enquete, file = "enquete190517_1253_retravaille.csv")
+write.csv(enquete, file = "enquete200517_0957_retravaille.csv")
 
