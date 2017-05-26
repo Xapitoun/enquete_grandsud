@@ -5,16 +5,70 @@ library("maptools")
 library("sp")
 library("stringr")
 library("rgeos")
-#library("OpenStreetMap")
 library("ggmap")
 #configuration du dossier par défaut
 setwd("~/Documents/jftardieu/enquete_grandsud/")
 
-#fonction transformation enquete avec toutes caracteristiques approppriées
+#fonction nettoyage données 
+test <- read.csv("~/Documents/jftardieu/enquete_grandsud/250517_0718_enquete.csv")
+test<- test[-c(1:65),]
+#sd005
+test <- test[-c(1180),]
+#sd004
+test$zone_travail[2863] <- "np004" 
+test$zone_travail[3437] <- "np004" 
+#sd003
+test <- test[-c(1434),]#suppression pour cause coordonnées incorrectes essager possibilite mettre coordonnes centre section comm
+test <- test[-c(1466),]#suppression pour cause coordonnées incorrectes essager possibilite mettre coordonnes centre section comm
+test <- test[-c(2332),]#suppression pour cause coordonnées incorrectes essager possibilite mettre coordonnes centre section comm
+sd005 <- test[test$zone_travail == "sd003" & test$etablissement == "99" ,c("etablissement", "type", "code_gps.Latitude", "code_gps.Longitude")]
+
+
+
+plot(sd005$code_gps.Latitude ~ sd005$code_gps.Longitude, col = "red", cex = 1)
+#test<- test[-c(495),]
+
+
+library("dplyr")
+
+test[test$etablissement == "99",]
+
+filtre <- filter(test, zone_travail == "sd004" &   etablissement == "Madame brea")
+filtre[, c("etablissement", "code_gps.Latitude", "code_gps.Longitude")]
+
+
+test[test$donn_admin.section == "1013-04","zone_travail"]
+#correction 
+test$zone_travail[2743] <- "np004" 
+test$zone_travail[1510] <- "sd001"
+#sd002
+test$zone_travail[1618] <- "np002"
+test$zone_travail[1616] <- "np002"
+
+test <- test[-c(1314),]
+test <- test[-c(1346),]
+
+
+test[2871,]
+#fonction caracteristique formulaires
 caracteristique <- function(base){
+#chargement des librairies
+  library("sp")
+  library("stringr")
 #chargement du fichier d’enquête
-enquete_initial <- read.csv(base, header = TRUE, colClasses = c("adresse.localite"="character", "adresse.numero"="character", "adresse.rue"="character", "sous_type"="factor", "remarque"="character"))
-enquete <- enquete_initial[-c(1:120),]
+enquete <- read.csv(base, header = TRUE, colClasses = c("adresse.localite"="character", "adresse.numero"="character", "adresse.rue"="character", "sous_type"="factor", "remarque"="character"))
+
+#suppression et correction lignes avec erreur
+enquete<- enquete[-c(1:65),]
+#sd005
+enquete <- enquete[-c(1180),]
+#sd004
+enquete$zone_travail[2863] <- "np004" 
+enquete$zone_travail[3437] <- "np004" 
+#sd003
+enquete <- enquete[-c(1434),]#suppression pour cause coordonnées incorrectes essager possibilite mettre coordonnes centre section comm
+enquete <- enquete[-c(1466),]#suppression pour cause coordonnées incorrectes essager possibilite mettre coordonnes centre section comm
+enquete <- enquete[-c(2332),]#suppression pour cause coordonnées incorrectes essager possibilite mettre coordonnes centre section comm
 
 attach(enquete)
 #conversion caractère en date
@@ -28,7 +82,7 @@ enquete$duree_reponse <- as.numeric(difftime(enquete$fin, enquete$debut, units =
 ###Genreer
 enquete$batiment.genre <- factor(enquete$batiment.genre, levels = c(1,2,3), labels = c("Homme","Femme", "Inconnu"))
 ###Mur
-#enquete$batiment.mur <- factor(enquete$batiment.mur, levels = c(1,2,3,4,5,6), labels = c("Bloc / Béton","Bois", "Terre", "Tôle", "Carton / Plastique", "Autre"))
+enquete$batiment.mur <- factor(enquete$batiment.mur, levels = c(1,2,3,4,5,6), labels = c("Bloc / Béton","Bois", "Terre", "Tôle", "Carton / Plastique", "Autre"))
 
 ## ajout nom type et sous-type
 enquete$type <- factor(enquete$type, labels = c("1-Industrie / artisanat","2- Transport & énergie",	"3- Commerce (sauf marché public)",	"4- Service professionnel / Bureau privé",	"5- Santé",	"6- Éducation",	"7- Finance",	"8- Restauration (Hôtel /Restaurant / club…)",	"9- Religion / Loisirs / Culture",	"10- Services technologiques / télé-communication",	"11- Services publics (sauf éducation et santé)",	"12- Marché public",	"13- Établissements divers",	"14- Autre Établissement"))
@@ -61,11 +115,14 @@ enquete$sous_type_nom <- factor(enquete$sous_type,
                                            "14.0-Établissement non répertorié"))
 #ajout nom propriété
 enquete$batiment.propriete <- factor(enquete$batiment.propriete, labels = c("Publique",	"Privée",	"Communautaire /ONG / non lucratif",	"Coopérative",	"Religieux / Congréganiste"), levels = c(1,2,3,4,5))
-
+enquete <- enquete[,c("debut", "fin", "zone_travail", "donn_admin.departement", "donn_admin.commune", "donn_admin.section", "adresse.localite", "adresse.rue", "adresse.numero", "type", "sous_type_nom","etablissement", "batiment.genre", "batiment.mur", "batiment.toiture", "batiment.niveau", "batiment.bati", "batiment.propriete", "remarque",  "duree_reponse", "code_gps.Latitude", "code_gps.Longitude")]
+write.csv(enquete, "~/Documents/jftardieu/enquete_grandsud/retravaille_250517_1438.csv")
 return(base)
 }
 
-caracteristique("~/Documents/jftardieu/enquete_grandsud/210517_0956_enquete.csv")
+caracteristique("~/Documents/jftardieu/enquete_grandsud/250517_1438_enquete.csv")
+
+
 #controle qualité
 #nombre de formulaires sans nom (99)
 enquete$etablissement[enquete$etablissement == 99]
@@ -112,7 +169,7 @@ hist(nom$duree_reponse)
 zones <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_zone84/zones_enquete84.shp")
 zones$travail <- tolower(zones$Code_enque) #code enqueteur en minuscules
 zones_trav <- zones[zones$travail == "sd005",] #filtre par zone d’enquete
-enqueteur <- enquete[enquete$zone_travail == "sd005",] 
+enqueteur <- enquete[enquete$zone_travail == "sd007",] 
 
 CRSojb <- CRS("+proj=longlat +datum=WGS84 +no_defs") #scr de référence
 #enqueteur@proj4string <- CRSojb 
@@ -127,20 +184,20 @@ plot(zones_trav)
 points(enqueteur$code_gps.Latitude ~ enqueteur$code_gps.Longitude, col = "red", cex = 1)
 
 
-
-
+e240517 <- read.csv("~/Documents/jftardieu/enquete_grandsud/240517_1046_retravaille.csv")
+e <- e240517[e240517$zone_travail == "gd003", ]
 # chargement données dans leaflet
-enqueteur <- enquete[enquete$zone_travail == "np003",] 
-m <- leaflet(sd005) %>%
+
+m <- leaflet(e) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
   #addPolygons(zones_enqu, lng, lat) %>%
   addMarkers(
     clusterOptions = markerClusterOptions(),
-    lng = ~code_gps.Longitude , lat =~code_gps.Latitude, popup = paste(sd005$etablissement, sd005$type, sd005$sous_type_nom))
+    lng = ~code_gps.Longitude , lat =~code_gps.Latitude, popup = paste(e$etablissement, e$type, e$sous_type_nom))
   
 m
 
-sd001 <- enquete[enquete$zone_travail == "sd001",]
+sd001 <- enquete[enquete$zone_travail == "sd007",]
 nrow(enquete$type)
 
 
@@ -156,5 +213,5 @@ poly_osm_enquete <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_z
 
 
 # Écriture du CSV
-write.csv(enquete, file = "enquete200517_0957_retravaille.csv")
+write.csv(enquete, file = "~/Documents/jftardieu/enquete_grandsud/enquete210517_2313retravaille.csv")
 
