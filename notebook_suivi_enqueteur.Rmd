@@ -3,7 +3,7 @@ title: |-
   Enquête Grand Sud
    
 author: "Lamure Tardieu F. X."
-date: "25 mai 2017 07h18"
+date: "18 Juin 2017 21h01 + ajout manuel gd007"
 output:
   html_document:
    toc: yes
@@ -27,9 +27,9 @@ library("rgeos")
 library("ggmap")
 #configuration du dossier par défaut
 setwd("~/Documents/jftardieu/enquete_grandsud/")
-retravaille <- read.csv("~/Documents/jftardieu/enquete_grandsud/retravaille_250517_1438.csv")
+retravaille <- read.csv("~/Documents/jftardieu/enquete_grandsud/retravaille_180617_2101.csv")
 zones <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_zone84/zones_enquete84.shp")
-enqueteur <- retravaille[,c("debut", "fin", "duree_reponse","zone_travail", "donn_admin.section", "adresse.localite", "adresse.numero", "adresse.rue", "type", "sous_type_nom", "etablissement", "batiment.propriete", "remarque", "code_gps.Longitude", "code_gps.Latitude")]
+enqueteur <- retravaille[,c("debut", "fin", "duree_reponse","zone_travail", "donn_admin.section", "adresse.localite", "adresse.numero", "adresse.rue", "type", "sous_type_nom", "etablissement", "batiment.propriete", "remarque", "code_gps.Longitude", "code_gps.Latitude", "date_debut", "coords")]
 zones$travail <- tolower(zones$Code_enque) #code enqueteur en minuscules
 CRSojb <- CRS("+proj=longlat +datum=WGS84 +no_defs") #scr de référence
 #enquete@proj4string <- CRSojb 
@@ -40,7 +40,53 @@ proj4string(enqueteur) <- proj4string(zones) #mise en place scr identique deux j
 ```
 
 # Résumé de l’enquête
- total de **`r nrow(enqueteur)`** éléments.
+ total de **`r nrow(enqueteur)`** éléments. 
+
+## Nombre d’éléments dupliqués
+
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(enqueteur$coords, fromLast = TRUE))
+```
+### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(enqueteur$date_debut)
+```
+
+```{r eval=TRUE, echo=FALSE}
+zones_trav <- zones #filtre par zone d’enquete
+  
+  resultat <- enqueteur
+
+  #zones_trav <- zones[zones$travail == enqueteur,] #filtre par zone d’enquete
+  #attach(resultat)
+
+#point dans polygone
+#over(enqueteur, zones_trav)
+#nbre points dans polygones
+
+# carte point dans polygone
+ plot(zones_trav, main = "Formulaires d’enquête dans l’ensemble des zones de travail", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+o <- over(resultat, zones_trav)
+
+m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
+  addMarkers(
+    clusterOptions = markerClusterOptions(),
+    lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
+m
+
+```
+
 
 # Sud
 ## Sd001
@@ -57,13 +103,21 @@ zones_trav <- zones[zones$travail == "sd001",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD001", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20, main = "Formulaires dans la zone de travail")
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
@@ -72,6 +126,16 @@ m
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd001",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd001",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 ## Sd002
 ```{r eval=TRUE, echo=FALSE}
@@ -86,21 +150,38 @@ zones_trav <- zones[zones$travail == "sd003",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD002", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
-  
 m
+
 ```
 
 ### Résumé
-Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd002",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd002",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd002",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd002",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments. 
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Sd003
 ```{r eval=TRUE, echo=FALSE}
@@ -115,20 +196,40 @@ zones_trav <- zones[zones$travail == "sd002",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD003", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+#calcul points dans zones de travail
 o <- over(resultat, zones_trav)
+#affichage leaflet
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+table(factor(resultat$date_debut))
 ```
 
 ### Résumé
-Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd003",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd003",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd003",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd003",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments. 
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Sd004
 ```{r eval=TRUE, echo=FALSE}
@@ -143,20 +244,38 @@ zones_trav <- zones[zones$travail == "sd004",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD004", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd004",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd004",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Sd005
 ```{r eval=TRUE, echo=FALSE}
@@ -171,21 +290,40 @@ zones_trav <- zones[zones$travail == "sd005",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD005", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20, main = "Formulaires dans la zone de travail")
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 #carte Leaflet
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd005",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd005",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments. 
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 ## Sd006
 ```{r eval=TRUE, echo=FALSE}
@@ -200,20 +338,39 @@ zones_trav <- zones[zones$travail == "sd006",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD006", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20, main = "Formulaires dans la zone de travail")
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd006",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd006",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 ## Sd007
 ```{r eval=TRUE, echo=FALSE}
@@ -228,20 +385,38 @@ zones_trav <- zones[zones$travail == "sd007",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD007", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20, main = "Formulaires dans la zone de travail")
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd007",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd007",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Sd008
 ```{r eval=TRUE, echo=FALSE}
@@ -256,20 +431,38 @@ zones_trav <- zones[zones$travail == "sd008",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD008", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20, main = "Formulaires dans la zone de travail")
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd008",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd008",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 
 ## Sd009
@@ -283,22 +476,41 @@ zones_trav <- zones[zones$travail == "sd009",] #filtre par zone d’enquete
 #point dans polygone
 #over(enqueteur, zones_trav)
 #nbre points dans polygones
-
+  
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD009", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20, main = "Formulaires dans la zone de travail")
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd009",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd009",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 ## Sd010
 ```{r eval=TRUE, echo=FALSE}
@@ -313,20 +525,39 @@ zones_trav <- zones[zones$travail == "sd010",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD010", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20, main = "Formulaires dans la zone de travail")
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd010",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd010",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 ## Sd011
 ```{r eval=TRUE, echo=FALSE}
@@ -341,20 +572,38 @@ zones_trav <- zones[zones$travail == "sd011",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD011", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20, main = "Formulaires dans la zone de travail")
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd011",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd011",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Sd012
 ```{r eval=TRUE, echo=FALSE}
@@ -366,23 +615,40 @@ zones_trav <- zones[zones$travail == "sd012",] #filtre par zone d’enquete
 
 #point dans polygone
 #over(enqueteur, zones_trav)
-#nbre points dans polygones
-
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD012", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd012",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd012",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 ## Sd013
 ```{r eval=TRUE, echo=FALSE}
@@ -397,20 +663,40 @@ zones_trav <- zones[zones$travail == "sd013",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail SD013", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+table(factor(resultat$date_debut))
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "sd013",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "sd013",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 # Nippes
 ## Np001
@@ -424,22 +710,41 @@ zones_trav <- zones[zones$travail == "np001",] #filtre par zone d’enquete
 #point dans polygone
 #over(enqueteur, zones_trav)
 #nbre points dans polygones
-
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "blue", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail NP001", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
 ```
 
+
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "np001",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "np001",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 ## Np002
 ```{r eval=TRUE, echo=FALSE}
@@ -454,12 +759,21 @@ zones_trav <- zones[zones$travail == "np002",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "blue", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail NP002", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
@@ -468,6 +782,17 @@ m
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "np002",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "np002",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
+
 
 ## Np003
 ```{r eval=TRUE, echo=FALSE}
@@ -482,12 +807,21 @@ zones_trav <- zones[zones$travail == "np003",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "blue", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail NP003", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
@@ -496,6 +830,15 @@ m
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "np003",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "np003",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Np004
 ```{r eval=TRUE, echo=FALSE}
@@ -510,12 +853,21 @@ zones_trav <- zones[zones$travail == "np004",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "blue", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail NP004", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
@@ -524,6 +876,16 @@ m
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "np004",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "np004",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 # Grand Anse
 ## Gd001
@@ -539,20 +901,39 @@ zones_trav <- zones[zones$travail == "gd001",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
-#o <- over(resultat, zones_trav)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail GD001", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
+o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+table(factor(resultat$date_debut))
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd001",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd001",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Gd002
 ```{r eval=TRUE, echo=FALSE}
@@ -567,20 +948,39 @@ zones_trav <- zones[zones$travail == "gd002",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail GD002", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd002",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd002",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Gd003
 ```{r eval=TRUE, echo=FALSE}
@@ -595,20 +995,39 @@ zones_trav <- zones[zones$travail == "gd003",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail GD003", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd003",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd003",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Gd004
 ```{r eval=TRUE, echo=FALSE}
@@ -623,20 +1042,39 @@ zones_trav <- zones[zones$travail == "gd004",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail GD004", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd004",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd004",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
 
 ## Gd005
 ```{r eval=TRUE, echo=FALSE}
@@ -649,22 +1087,41 @@ zones_trav <- zones[zones$travail == "gd005",] #filtre par zone d’enquete
 #point dans polygone
 #over(enqueteur, zones_trav)
 #nbre points dans polygones
-
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail GD005", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd005",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd005",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
 
 ## Gd006
 ```{r eval=TRUE, echo=FALSE}
@@ -679,22 +1136,42 @@ zones_trav <- zones[zones$travail == "gd006",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail GD006", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
 o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
 m
+
 ```
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd006",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd006",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
 
-## Gd007 **(pas encore de point enregistré)**
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
+
+## Gd007
 ```{r eval=TRUE, echo=FALSE}
 zones_trav <- zones[zones$travail == "gd007",] #filtre par zone d’enquete
   
@@ -707,12 +1184,21 @@ zones_trav <- zones[zones$travail == "gd007",] #filtre par zone d’enquete
 #nbre points dans polygones
 
 # carte point dans polygone
- plot(zones_trav)
-points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "green", cex = 1)
-#o <- over(resultat, zones_trav)
+ plot(zones_trav, main = "Formulaires d’enquête dans la zone de travail GD007", xlab = "Longitude", ylab = "Latitude")
+points(resultat$code_gps.Latitude ~ resultat$code_gps.Longitude, col = "red", cex = 1, pch = 20)
+axis(2, col = "violet", col.axis = "dark violet", lwd = 2)
+axis(1, col = "red", col.axis = "dark red", lwd = 2)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+# points dans polygone zones de travail
+o <- over(resultat, zones_trav)
 m <- leaflet(resultat) %>%
+  #ajout tuiles OSM
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  #addPolygons(zones_enqu, lng, lat) %>%
+  #ajout Polygone zones de travail
+  addPolygons(data = zones_trav, fill = FALSE, stroke = TRUE, color = "red") %>%
+  #add a legend
+    addLegend("bottomright", colors = "red", labels = "Zones de travail") %>%
+  #ajout marqueurs
   addMarkers(
     clusterOptions = markerClusterOptions(),
     lng = ~resultat$code_gps.Longitude , lat =~resultat$code_gps.Latitude, popup = paste(resultat$etablissement, resultat$type, resultat$sous_type_nom))
@@ -721,3 +1207,13 @@ m
 
 ### Résumé
 Il y **`r nrow(resultat) - nrow(o[o$Code_enque == "gd007",])`** éléments dans la zone de travail, **`r nrow(o[o$Code_enque == "gd007",])`** qui n’y sont pas sur un total de **`r nrow(resultat)`** éléments.
+
+#### Nombre d’éléments dupliqués
+```{r eval=TRUE, echo=FALSE}
+ table(duplicated(resultat$coords, fromLast = TRUE))
+```
+#### Jours de travail
+```{r eval=TRUE, echo=FALSE}
+table(factor(resultat$date_debut))
+```
+
