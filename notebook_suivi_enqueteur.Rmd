@@ -3,7 +3,7 @@ title: |-
   Enquête Grand Sud
    
 author: "Lamure Tardieu F. X."
-date: "18 Juin 2017 21h01 + ajout manuel gd007"
+date: "26 Juin 2017 15h08 + ajout manuel gd007 et sd011"
 output:
   html_document:
    toc: yes
@@ -27,7 +27,7 @@ library("rgeos")
 library("ggmap")
 #configuration du dossier par défaut
 setwd("~/Documents/jftardieu/enquete_grandsud/")
-retravaille <- read.csv("~/Documents/jftardieu/enquete_grandsud/retravaille_180617_2101.csv")
+retravaille <- read.csv("~/Documents/jftardieu/enquete_grandsud/retravaille_260617_1508.csv")
 zones <- readShapePoly("~/Documents/jftardieu/zones_enquete/enquete_zone84/zones_enquete84.shp")
 enqueteur <- retravaille[,c("debut", "fin", "duree_reponse","zone_travail", "donn_admin.section", "adresse.localite", "adresse.numero", "adresse.rue", "type", "sous_type_nom", "etablissement", "batiment.propriete", "remarque", "code_gps.Longitude", "code_gps.Latitude", "date_debut", "coords")]
 zones$travail <- tolower(zones$Code_enque) #code enqueteur en minuscules

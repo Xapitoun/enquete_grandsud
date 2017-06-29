@@ -5,7 +5,7 @@ caracteristique <- function(base){
   library("stringr")
   #chargement du fichier d’enquête
   enquete <- read.csv(base, header = TRUE, colClasses = c("adresse.localite"="character", "adresse.numero"="character", "adresse.rue"="character", "sous_type"="factor", "remarque"="character"))
-  #enquete <- read.csv("~/Documents/jftardieu/enquete_grandsud/030617_0945_enquete.csv")
+  #enquete <- read.csv("~/Documents/jftardieu/enquete_grandsud/260617_1508_enquete.csv")
   enquete<- enquete[-c(1:65),]
   #sd005
   enquete <- enquete[-c(1180),]
@@ -48,6 +48,9 @@ caracteristique <- function(base){
   enquete <- enquete[-c(3493),]#suppression pour cause coordonnées incoherentes zone de PAP
   enquete <- enquete[-c(989),]#suppression pour cause coordonnées incoherentes zone de PAP
   enquete$zone_travail[5165] <- "sd003"
+  enquete <- enquete[-c(7938:7970,7973:7974,7976:7984,7986:7993),] #suppression pas de end, pas de longitude et latitude, sd011
+  enquete <- enquete[c(7887:7889,7891:7893,7895:7932,7934:7937),] #suppression pas de end, pas de longitude et latitude, sd011
+  
   
   #gd007 <- read.csv("~/Documents/jftardieu/enquete_grandsud/gd007/formulaires_briefcase/gd007_250517_0921.csv", header = TRUE, colClasses = c("adresse.localite"="character", "adresse.numero"="character", "adresse.rue"="character", "sous_type"="factor", "remarque"="character"))
   #correction date 
@@ -117,16 +120,16 @@ caracteristique <- function(base){
   enquete$coords <- as.character(paste(enquete$code_gps.Latitude, enquete$code_gps.Longitude, sep = ","))
   standard <- enquete[,c(3:11,14,15,63, 16:32,36:45,48:55, 58:61)]
   enquete <- enquete[,c("debut","date_debut","fin", "date_fin", "zone_travail", "donn_admin.departement", "donn_admin.commune", "donn_admin.section", "adresse.localite", "adresse.rue", "adresse.numero", "type", "sous_type_nom","etablissement", "batiment.genre", "batiment.mur", "batiment.toiture", "batiment.niveau", "batiment.bati", "batiment.propriete", "remarque",  "duree_reponse", "code_gps.Latitude", "code_gps.Longitude", "coords")]
-  write.csv(enquete, "~/Documents/jftardieu/enquete_grandsud/retravaille_180617_2101.csv")
+  write.csv(enquete, "~/Documents/jftardieu/enquete_grandsud/retravaille_260617_1508.csv")
   
-  write.csv(standard, "~/Documents/jftardieu/enquete_grandsud/standard_180617_2101.csv")
+  write.csv(standard, "~/Documents/jftardieu/enquete_grandsud/standard_260617_1508.csv")
   
   return(base)
 }
 
-caracteristique("~/Documents/jftardieu/enquete_grandsud/180617_2101_enquete.csv")
+caracteristique("~/Documents/jftardieu/enquete_grandsud/260617_1508_enquete.csv")
 
-enquete <- read.csv("~/Documents/jftardieu/enquete_grandsud/retravaille_180617_2101.csv")
+enquete <- read.csv("~/Documents/jftardieu/enquete_grandsud/retravaille_260617_1508.csv")
 
 
 
@@ -219,7 +222,7 @@ test$date_fin <- strptime((paste("05",str_sub(test$end, -20, -19),str_sub(test$e
 
 
 test <- test[-c(),]#suppression pour cause coordonnées incoherentes
-sd003 <- test[test$zone_travail == "sd003" ,c("etablissement", "zone_travail", "code_gps.Latitude", "code_gps.Longitude")]
+sd011 <- enquete[enquete$zone_travail == "sd011" & enquete$date_debut == "2017-05-15" ,c("etablissement", "debut", "date_debut", "coords", "fin")]
 test[test$etablissement == "Église adventiste des coteaux",c("etablissement", "zone_travail", "code_gps.Latitude", "code_gps.Longitude", "donn_admin.section")]
 
 test <- test[]
